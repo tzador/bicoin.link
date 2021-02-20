@@ -1,5 +1,7 @@
 # bicoin.link
 
+Bet on the BitCoin price fluctuations.
+
 Please visit [bicoin.link](https://bicoin.link) to try it live.
 
 ## Useful commands
@@ -28,31 +30,28 @@ WebSocket
 
 # TODO
 
-- render bets as lines
+- implement bets resolving after timeout of 1 minute = 60 seconds
 - render times label
 - render price labels
 - render zoom
 - render local times
 - render open and close time of the bet in the bet list(or current time if not yet resolved)
 - render responsivly / mobile friendly
-
 - animate min/max price
-
-- implement bets timeout
 - implement disallow overlaping bets
 - impleent pub/sub for cross server broadcast
 - implement scores
 - implement deletion of old bets (or just keep the last 11)
 - implement db transactions / redis MULTI command
-
 - sound/speach
-
 - write tests
 - record a screen recording and speed it up as gif
 
 # WISH LIST
 
+- render bets as lines
 - multiple tickers
+- pack price history in binary array and send it down compressed to speed up boot time
 
 # DONE
 

@@ -5,17 +5,17 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - worker
+      - nodejs
     ports:
       - 8080:8080
     logging:
       driver: none
 
-  worker:
+  nodejs:
     build: .
     volumes:
-      - ./node.js/main.js:/node.js/main.js
-      - ./vanilla:/node.js/vanilla
+      - ./node.js/main.js:/nodejsapp/main.js
+      - ./vanilla.js:/nodejsapp/vanilla.js
     environment:
       REDIS_URL: redis://redis
     entrypoint: nodemon main.js

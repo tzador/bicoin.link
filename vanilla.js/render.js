@@ -15,11 +15,9 @@ function render(ctx, w, h, state) {
   height = h;
   dpi = devicePixelRatio;
   seconds_now = Date.now() / 1000.0;
-
   if (state.history.length > 0) {
     anim_price = 0.9 * anim_price + 0.1 * state.history[state.history.length - 1].price;
   }
-
   render_init(state.history);
   render_history(ctx, state.history, anim_price);
   render_bets(ctx, state.bets);
@@ -105,48 +103,69 @@ function render_history(ctx, history, current_price) {
 }
 
 function render_bets(ctx, bets) {
-  ctx.save();
-  for (const bet of bets) {
-    const x = seconds_to_x(bet.seconds);
-    const y = price_to_y(bet.open_price);
-    const w = speed_x * 60;
-    if (bet.is_up) {
-      ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
-      ctx.fillRect(x, 0, w, y);
-    } else {
-      ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
-      ctx.fillRect(x, y, w, height - y);
-    }
-  }
-  ctx.restore();
-
-  ctx.save();
-  let y = 48 * dpi;
-  for (const bet of bets) {
-    const diff = Math.floor(seconds_now - bet.seconds);
-    const capped = Math.max(0, Math.min(60, diff));
+  // {
+  //   ctx.save();
+  //   for (const bet of bets) {
+  //     const x = seconds_to_x(bet.seconds);
+  //     const y = price_to_y(bet.open_price);
+  //     const w = speed_x * 60;
+  //     if (bet.is_up) {
+  //       ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
+  //       ctx.fillRect(x, 0, w, y);
+  //     } else {
+  //       ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
+  //       ctx.fillRect(x, y, w, height - y);
+  //     }
+  //   }
+  //   ctx.restore();
+  // }
+  {
     ctx.save();
-    ctx.translate(8 * dpi, 8 * dpi);
-    if (bet.is_up) {
-      ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
-    } else {
-      ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
+    for (const bet of bets) {
+      const x0 = seconds_to_x(bet.seconds);
+      const y0 = price_to_y(bet.open_price);
+      const x1 = seconds_to_x(bet.seconds + 60);
+      const y1 = price_to_y(bet.close_price || anim_price);
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      if (bet.is_up) ctx.strokeStyle = "rgba(0, 255, 0, 1)";
+      else ctx.strokeStyle = "rgba(255, 0, 0, 1)";
+      ctx.lineCap = "round";
+      ctx.lineWidth = 4 * dpi;
+      ctx.stroke();
     }
-    ctx.fillRect(0, y, bets_width * dpi, 32 * dpi);
-    if (bet.is_up) {
-      ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
-    } else {
-      ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-    }
-    ctx.fillRect(0, y, (1 - capped / 60) * bets_width * dpi, 32 * dpi);
-    ctx.fillStyle = "white";
-    const text = format_date(bet.seconds);
-    ctx.fillText(text, 8 * dpi, y + 22 * dpi);
-    ctx.fillText("loose :(", 200 * dpi, y + 22 * dpi);
     ctx.restore();
-    y += 40 * dpi;
   }
-  ctx.restore();
+  {
+    ctx.save();
+    let y = 48 * dpi;
+    for (const bet of bets) {
+      const diff = Math.floor(seconds_now - bet.seconds);
+      const capped = Math.max(0, Math.min(60, diff));
+      ctx.save();
+      ctx.translate(8 * dpi, 8 * dpi);
+      if (bet.is_up) {
+        ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
+      } else {
+        ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
+      }
+      ctx.fillRect(0, y, bets_width * dpi, 32 * dpi);
+      if (bet.is_up) {
+        ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+      } else {
+        ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+      }
+      ctx.fillRect(0, y, (1 - capped / 60) * bets_width * dpi, 32 * dpi);
+      ctx.fillStyle = "white";
+      const text = format_date(bet.seconds);
+      ctx.fillText(text, 8 * dpi, y + 22 * dpi);
+      ctx.fillText("loose :(", 200 * dpi, y + 22 * dpi);
+      ctx.restore();
+      y += 40 * dpi;
+    }
+    ctx.restore();
+  }
 }
 
 function seconds_to_x(seconds) {

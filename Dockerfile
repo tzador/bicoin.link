@@ -1,6 +1,6 @@
 FROM node:14
 
-WORKDIR /node.js
+WORKDIR /nodejsapp
 
 RUN npm i -g nodemon
 
