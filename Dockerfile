@@ -7,7 +7,7 @@ RUN npm i -g nodemon
 COPY ./node.js/package.json ./
 COPY ./node.js/package-lock.json ./
 
-RUN npm i
+RUN npm install
 
 COPY ./vanilla.js ./vanilla.js
 COPY ./node.js/main.js ./

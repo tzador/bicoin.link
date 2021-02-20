@@ -52,6 +52,9 @@ WebSocket
 - render bets as lines
 - multiple tickers
 - pack price history in binary array and send it down compressed to speed up boot time
+- React clienet
+- Svelte client
+- Flutter client
 
 # DONE
 

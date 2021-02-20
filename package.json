@@ -30,6 +30,7 @@
     "@aws-cdk/aws-route53-targets": "^1.90.1",
     "@aws-cdk/aws-servicediscovery": "^1.90.1",
     "@aws-cdk/core": "^1.89.0",
+    "express": "^4.17.1",
     "source-map-support": "^0.5.16"
   }
 }
