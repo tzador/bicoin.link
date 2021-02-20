@@ -12,6 +12,10 @@ Please visit [bicoin.link](https://bicoin.link) to try it live.
 - `cdk diff` compare deployed stack with current state
 - `cdk synth` emits the synthesized CloudFormation template
 
+# Architecture
+
+![](docs/arch.png | width=100s
+
 # Protocol (HTTP + WebSocket)
 
 HTTP
