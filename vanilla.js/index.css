@@ -17,6 +17,7 @@ a:visited {
   color: dodgerblue;
   text-decoration: none;
   cursor: pointer;
+  user-select: none;
 }
 a:hover {
   color: white;
@@ -25,6 +26,11 @@ a:hover {
 .gap {
   width: 16px;
   height: 16px;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
 }
 
 #background {

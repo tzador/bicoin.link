@@ -11,6 +11,7 @@ const state = {
   ticker: { ticker: "btcusdt", seconds: 0, price: 0 },
   history: [],
   bets: [],
+  score: 0,
 };
 let public_ws = null;
 let private_ws = null;
@@ -40,6 +41,18 @@ function logout() {
   reconnect_private_ws();
 }
 
+function minus_one() {
+  restPost("/score/btcusdt", { diff: -1 });
+}
+
+function reset() {
+  restPost("/score/btcusdt", { reset: true });
+}
+
+function plus_one() {
+  restPost("/score/btcusdt", { diff: +1 });
+}
+
 async function place_bet(is_up) {
   state.bets.unshift(await restPost("/rest/bets/btcusdt", { is_up }));
 }
@@ -49,8 +62,9 @@ async function place_bet(is_up) {
   const ticker_el = document.getElementById("ticker");
   const login_el = document.getElementById("login");
   const logout_el = document.getElementById("logout");
-  const reset_el = document.getElementById("reset");
+  const score_el = document.getElementById("score");
   const buttons_el = document.getElementById("buttons");
+  const the_score_el = document.getElementById("the-score");
   let last_auth_token = -1;
   let last_ticker_seconds = -1;
 
@@ -61,16 +75,19 @@ async function place_bet(is_up) {
         login_el.style.display = "none";
         logout_el.style.display = "block";
         logout_el.innerText = "Logout @" + state.token;
-        reset_el.style.display = "block";
+        score_el.style.display = "flex";
         buttons_el.style.display = "flex";
+        the_score_el.style.display = "block";
       } else {
         login_el.style.display = "block";
         logout_el.style.display = "none";
         logout_el.style.innerText = "";
-        reset_el.style.display = "none";
+        score_el.style.display = "none";
         buttons_el.style.display = "none";
+        the_score_el.style.display = "none";
       }
     }
+    the_score_el.innerHTML = "Score = " + state.score;
     if (last_ticker_seconds != state.ticker.seconds) {
       last_ticker_seconds = state.ticker.seconds;
       const date = format_date(state.ticker.seconds);
@@ -79,6 +96,7 @@ async function place_bet(is_up) {
       const ticker_value = `${date} &nbsp; 1 BTC = <span style="color: white">${price_str}</span> USDT`;
       ticker_el.innerHTML = ticker_value;
     }
+
     requestAnimationFrame(mirror);
   })();
 }
@@ -159,7 +177,6 @@ async function fetch_history() {
 async function fetch_bets() {
   if (!state.token) return;
   state.bets = await restGet("/rest/bets/btcusdt");
-  console.log("GOT bets", state.bets);
 }
 
 // # Render

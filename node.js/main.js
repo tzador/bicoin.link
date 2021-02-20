@@ -63,6 +63,25 @@ class RedisStore {
     return (await this.redis.zrange(key, 0, -1)).map(JSON.parse);
   }
 
+  scoreKey(ticker, user_id) {
+    return "score#" + ticker + "#" + user_id;
+  }
+
+  async getScore(ticker, user_id) {
+    const value = await this.redis.get(this.scoreKey(ticker, user_id));
+    return JSON.parse(value);
+  }
+
+  async setScore(ticker, user_id, score) {
+    const json = JSON.stringify(score);
+    await this.redis.set(this.scoreKey(ticker, user_id), json);
+  }
+
+  async diffScore(ticker, user_id, diff) {
+    const score = await this.getScore(ticker, user_id);
+    await this.setScore(ticker, user_id, score + diff);
+  }
+
   async putBet(ticker, user_id, is_up) {
     const seconds = Math.ceil(last_time);
     const bet = {
@@ -90,6 +109,24 @@ class RedisStore {
 const store = new RedisStore(new Redis(process.env.REDIS_URL));
 
 // # REST API
+app.use(body_parser.json());
+
+app.get("/score/:ticker", async (req, res) => {
+  const user_id = req.headers["auth-token"];
+  if (!user_id) return res.json(null);
+  res.json(await store.getScore(req.params.ticker, user_id));
+});
+
+app.post("/score/:ticker", async (req, res) => {
+  const user_id = req.headers["auth-token"];
+  if (!user_id) return res.json(null);
+  if (req.body.reset) {
+    res.json(await store.setScore(req.params.ticker, user_id, 0));
+  } else if (req.body.diff) {
+    res.json(await store.diffScore(req.params.ticker, user_id, req.body.diff));
+  } else res.json(null);
+});
+
 app.get("/rest/ticker/:ticker", async (req, res) => {
   res.json(await store.getTicker(req.params.ticker));
 });
@@ -104,10 +141,9 @@ app.get("/rest/bets/:ticker", async (req, res) => {
   res.json(await store.getBets(req.params.ticker, user_id));
 });
 
-app.post("/rest/bets/:ticker", body_parser.json(), async (req, res) => {
+app.post("/rest/bets/:ticker", async (req, res) => {
   const user_id = req.headers["auth-token"];
   if (!user_id) return res.json(null);
-  console.log(req.params);
   res.json(await store.putBet(req.params.ticker, user_id, req.body.is_up));
 });
 

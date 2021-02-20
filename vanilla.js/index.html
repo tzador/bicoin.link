@@ -25,10 +25,16 @@
       <div id="ticker">ticker</div>
     </div>
     <div id="top-right">
-      <a href="https://github.com/tzador/bicoin.link" target="_blank">GitHub</a>
-      <div class="gap"></div>
-      <a id="reset" onclick="reset()">Reset</a>
-      <div class="gap"></div>
+      <div id="score" class="row">
+        <span id="the-score">Score = 0</span>
+        <div class="gap"></div>
+        <a onclick="plus_one()">+1</a>
+        <div class="gap"></div>
+        <a onclick="reset()">0</a>
+        <div class="gap"></div>
+        <a onclick="minus_one()">-1</a>
+        <div class="gap"></div>
+      </div>
       <a id="login" onclick="login()">Login</a>
       <a id="logout" onclick="logout()">Logout</a>
       <div class="gap"></div>
