@@ -1,14 +1,10 @@
 #!/usr/bin/env node
 import "source-map-support/register";
-import * as acm from "@aws-cdk/aws-certificatemanager";
-import * as cdk from "@aws-cdk/core";
+import * as ecs_patterns from "@aws-cdk/aws-ecs-patterns";
+import * as logs from "@aws-cdk/aws-logs";
 import * as ec2 from "@aws-cdk/aws-ec2";
 import * as ecs from "@aws-cdk/aws-ecs";
-import * as ecs_patterns from "@aws-cdk/aws-ecs-patterns";
-import * as route53 from "@aws-cdk/aws-route53";
-import * as route53_targets from "@aws-cdk/aws-route53-targets";
-import * as logs from "@aws-cdk/aws-logs";
-import * as servicediscovery from "@aws-cdk/aws-servicediscovery";
+import * as cdk from "@aws-cdk/core";
 
 const env = {
   account: process.env.AWS_ACCOUNT,
