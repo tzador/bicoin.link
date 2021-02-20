@@ -49,21 +49,21 @@ class RedisStore {
     await this.redis.zadd("history#" + ticker, seconds, json);
   }
 
-  async get_ticker(ticker) {
+  async getTicker(ticker) {
     const value = await this.redis.get("ticker#" + ticker);
     return JSON.parse(value);
   }
 
-  async get_history(ticker) {
+  async getHistory(ticker) {
     return (await this.redis.zrange("history#" + ticker, -history_length, -1)).map(JSON.parse);
   }
 
-  async get_bets(ticker, user_id) {
+  async getBets(ticker, user_id) {
     const key = "bets#" + ticker + "#" + user_id;
     return (await this.redis.zrange(key, 0, -1)).map(JSON.parse);
   }
 
-  async put_bet(ticker, user_id, is_up) {
+  async putBet(ticker, user_id, is_up) {
     const seconds = Math.ceil(last_time);
     const bet = {
       bet_id: uuid.v4(),
@@ -76,6 +76,14 @@ class RedisStore {
     };
     const key = "bets#" + ticker + "#" + user_id;
     await this.redis.zadd(key, seconds, JSON.stringify(bet));
+    wssPrivateBroadcast(user_id, "bet-update", bet);
+    setTimeout(async () => {
+      const close_ticker = JSON.parse(await this.redis.get("ticker#" + ticker));
+      // update the bet
+      // store it back to user bets table
+      // delete it from root bets table
+      wssPrivateBroadcast(user_id, "bet-resolve", bet);
+    }, 1000 * 5);
     return bet;
   }
 }
@@ -83,24 +91,24 @@ const store = new RedisStore(new Redis(process.env.REDIS_URL));
 
 // # REST API
 app.get("/rest/ticker/:ticker", async (req, res) => {
-  res.json(await store.get_ticker(req.params.ticker));
+  res.json(await store.getTicker(req.params.ticker));
 });
 
 app.get("/rest/history/:ticker", async (req, res) => {
-  res.json(await store.get_history(req.params.ticker));
+  res.json(await store.getHistory(req.params.ticker));
 });
 
 app.get("/rest/bets", async (req, res) => {
   const user_id = req.headers["auth-token"];
   if (!user_id) return res.json(null);
-  res.json(await store.get_bets(req.params.ticker, user_id));
+  res.json(await store.getBets(req.params.ticker, user_id));
 });
 
-app.post("/rest/bets", body_parser.json(), async (req, res) => {
+app.post("/rest/bets/:ticker", body_parser.json(), async (req, res) => {
   const user_id = req.headers["auth-token"];
   if (!user_id) return res.json(null);
-  res.json(await store.put_bet(req.params.ticker, user_id, req.body.is_up));
-  wss_private_broadcast(user_id, "hello", "world");
+  console.log(req.params);
+  res.json(await store.putBet(req.params.ticker, user_id, req.body.is_up));
 });
 
 // # Public WebSocket API
@@ -108,7 +116,7 @@ wss_public.on("connection", function connection(ws) {
   ws.send(JSON.stringify({ tag: "hello", data: "public" }));
 });
 
-function wss_public_broadcast(tag, data) {
+function wssPublicBroadcast(tag, data) {
   for (const ws of wss_public.clients) {
     if (ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ tag, data }));
@@ -121,11 +129,10 @@ wss_private.on("connection", function connection(ws) {
   ws.on("message", function connection(message) {
     const event = JSON.parse(message);
     if (event.token) ws.user_id = event.token;
-    wss_private_on_message(ws.user_id, event);
   });
 });
 
-function wss_private_broadcast(user_id, tag, data) {
+function wssPrivateBroadcast(user_id, tag, data) {
   for (const ws of wss_private.clients) {
     if (ws.readyState === WebSocket.OPEN && ws.user_id == user_id) {
       ws.send(JSON.stringify({ tag, data }));
@@ -133,21 +140,17 @@ function wss_private_broadcast(user_id, tag, data) {
   }
 }
 
-function wss_private_on_message(user_id, event) {
-  // TODO: todo
-}
-
 // # Binance
 // TODO possibly simplify and avoid the queue.
-(function binance() {
+(function connectToBinance() {
   const queue = [];
-  (async function process_binance() {
+  (async function processBinance() {
     while (queue.length) {
       const { time, price } = queue.shift();
       if (last_time && Math.floor(last_time) != Math.floor(time)) {
         const seconds = Math.floor(time);
         store.set_ticker(ticker, seconds, last_price);
-        wss_public_broadcast("ticker#" + ticker, {
+        wssPublicBroadcast("ticker#" + ticker, {
           ticker,
           seconds,
           price: last_price,
@@ -156,7 +159,7 @@ function wss_private_on_message(user_id, event) {
       last_time = time;
       last_price = price;
     }
-    setTimeout(process_binance, 1); // TODO replace with process.nextTick
+    setTimeout(processBinance, 1); // TODO replace with process.nextTick
   })();
   (async function connect_to_binance() {
     const ws = new WebSocket(binance_ws_url);

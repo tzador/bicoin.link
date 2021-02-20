@@ -10,7 +10,7 @@
     ctx.save();
     ctx.clearRect(0, 0, 64, 64);
     ctx.translate(32, 32);
-    ctx.rotate(-Date.now() / 1000.0);
+    ctx.rotate(-performance.now() / 1000.0);
     ctx.drawImage(img, 0, 0, img.width, img.height, -32, -32, 64, 64);
     const base64 = canvas.toDataURL("image/png");
     favicon.href = base64;

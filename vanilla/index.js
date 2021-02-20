@@ -41,7 +41,7 @@ function logout() {
 }
 
 async function place_bet(is_up) {
-  state.bets.unshift(await rest_post("/rest/bets/", { is_up }));
+  state.bets.unshift(await restPost("/rest/bets/btcusdt", { is_up }));
 }
 
 // # Mirror
@@ -132,7 +132,7 @@ function on_private(tag, data) {
 }
 
 // # REST
-async function rest_get(path) {
+async function restGet(path) {
   const response = await fetch(rest_base_url + path, {
     method: "GET",
     headers: { "auth-token": state.token },
@@ -140,7 +140,7 @@ async function rest_get(path) {
   return await response.json();
 }
 
-async function rest_post(path, data) {
+async function restPost(path, data) {
   const response = await fetch(rest_base_url + path, {
     method: "POST",
     headers: {
@@ -153,12 +153,12 @@ async function rest_post(path, data) {
 }
 
 async function fetch_history() {
-  state.history = await rest_get("/rest/history/btcusdt");
+  state.history = await restGet("/rest/history/btcusdt");
 }
 
 async function fetch_bets() {
   if (!state.token) return;
-  state.bets = await rest_get("/rest/bets/");
+  state.bets = await restGet("/rest/bets/");
 }
 
 // # Render

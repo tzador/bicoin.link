@@ -1,5 +1,5 @@
 const bets_width = 274;
-const shift_x = 240;
+const shift_x = 264;
 const speed_x = 8;
 
 let price_min = Number.MAX_VALUE;
@@ -8,14 +8,20 @@ let seconds_now = Date.now() / 1000.0;
 let width = 0;
 let height = 0;
 let dpi = 1;
+let anim_price = 0;
 
 function render(ctx, w, h, state) {
   width = w;
   height = h;
   dpi = devicePixelRatio;
   seconds_now = Date.now() / 1000.0;
+
+  if (state.history.length > 0) {
+    anim_price = 0.9 * anim_price + 0.1 * state.history[state.history.length - 1].price;
+  }
+
   render_init(state.history);
-  render_history(ctx, state.history, state.ticker.price);
+  render_history(ctx, state.history, anim_price);
   render_bets(ctx, state.bets);
   render_zebra(ctx, state.history);
 }
@@ -39,7 +45,7 @@ function render_zebra(ctx, history) {
     const x1 = seconds_to_x(ztime);
     const y1 = height;
     if (Math.floor(ztime) % 2 == 0) {
-      ctx.fillStyle = "rgba(255, 255, 255, 0.125)";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.07)";
     } else {
       ctx.fillStyle = "rgba(255, 255, 255, 0.0)";
     }
@@ -48,7 +54,7 @@ function render_zebra(ctx, history) {
     if (x0 < 0) break;
   }
   const zero_x = seconds_to_x(seconds_now);
-  ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+  ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
   ctx.fillRect(zero_x, 0, zero_x + width, height);
   ctx.restore();
 }
@@ -62,9 +68,13 @@ function render_history(ctx, history, current_price) {
   let last_y = 0;
   let first_x = 0;
   let first_y = 0;
+  let i = 0;
   for (const { seconds, price } of history) {
-    const x = seconds_to_x(seconds);
-    const y = price_to_y(price);
+    let x = seconds_to_x(seconds);
+    let y = price_to_y(price);
+    if (i++ == history.length - 1) {
+      y = price_to_y(anim_price);
+    }
     last_x = x;
     last_y = y;
     if (first_time) {
@@ -75,11 +85,11 @@ function render_history(ctx, history, current_price) {
     }
     ctx.lineTo(x, y);
   }
-  // ctx.lineTo(width, last_y);
+  ctx.lineTo(width, last_y);
   ctx.strokeStyle = "yellow";
   ctx.lineWidth = 2 * dpi;
   const zero_x = seconds_to_x(seconds_now);
-  ctx.lineTo(zero_x, last_y);
+  if (anim_price) ctx.lineTo(zero_x, last_y);
   ctx.stroke();
 
   ctx.lineTo(zero_x, height);
@@ -143,6 +153,6 @@ function seconds_to_x(seconds) {
   return width - (seconds_now - seconds) * speed_x - shift_x * devicePixelRatio;
 }
 
-function price_to_y(p) {
-  return height - 2 * 48 * dpi - (height - 4 * 48 * dpi) * ((p - price_min) / (price_max - price_min));
+function price_to_y(price) {
+  return height - 2 * 48 * dpi - (height - 4 * 48 * dpi) * ((price - price_min) / (price_max - price_min));
 }
