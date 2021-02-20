@@ -14,7 +14,7 @@ Please visit [bicoin.link](https://bicoin.link) to try it live.
 
 # Architecture
 
-![](docs/arch.png | width=100s
+![](docs/arch.png)
 
 # Protocol (HTTP + WebSocket)
 
