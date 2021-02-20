@@ -43,6 +43,7 @@ WebSocket
 - impleent pub/sub for cross server broadcast
 - implement scores
 - implement deletion of old bets (or just keep the last 11)
+- implement db transactions / redis MULTI command
 
 - sound/speach
 
