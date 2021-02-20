@@ -14,7 +14,7 @@ let last_time = 0;
 let last_price = 0;
 
 const app = express();
-app.set("json spaces", 2);
+app.set("json spaces", 4);
 app.use(express.static("vanilla.js"));
 
 const server = http.createServer(app);
