@@ -158,7 +158,8 @@ async function fetch_history() {
 
 async function fetch_bets() {
   if (!state.token) return;
-  state.bets = await restGet("/rest/bets/");
+  state.bets = await restGet("/rest/bets/btcusdt");
+  console.log("GOT bets", state.bets);
 }
 
 // # Render

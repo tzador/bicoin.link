@@ -98,7 +98,7 @@ app.get("/rest/history/:ticker", async (req, res) => {
   res.json(await store.getHistory(req.params.ticker));
 });
 
-app.get("/rest/bets", async (req, res) => {
+app.get("/rest/bets/:ticker", async (req, res) => {
   const user_id = req.headers["auth-token"];
   if (!user_id) return res.json(null);
   res.json(await store.getBets(req.params.ticker, user_id));
