@@ -1,6 +1,6 @@
-const bets_width = 274;
-const shift_x = 264;
 const speed_x = 8;
+let shift_x = 264;
+let bets_width = 274;
 
 let price_min = Number.MAX_VALUE;
 let price_max = Number.MIN_VALUE;
@@ -32,6 +32,14 @@ function render_init(history) {
     price_min = Math.min(price, price_min);
     price_max = Math.max(price, price_max);
   }
+  if (window.innerWidth < 720) {
+    shift_x = 80;
+    bets_width = 274;
+  } else {
+    shift_x = 274;
+    bets_width = 274;
+  }
+  console.log(bets_width);
 }
 
 function render_zebra(ctx, history) {

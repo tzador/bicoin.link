@@ -5,14 +5,15 @@ const http = require("http");
 const WebSocket = require("ws");
 const body_parser = require("body-parser");
 
-const port = 8080;
+const BET_TIMEOUT = 5; // should be 60
+const PORT = 8080;
 
 const app = express();
 app.set("json spaces", 4);
 app.use(express.static("../vanilla.js"));
 
 const server = http.createServer(app);
-server.listen(port, () => console.log("http://localhost:" + port));
+server.listen(PORT, () => console.log("http://localhost:" + PORT));
 
 const wss_public = new WebSocket.Server({ noServer: true });
 const wss_private = new WebSocket.Server({ noServer: true });
@@ -84,8 +85,9 @@ app.post("/rest/bets/:ticker", async (req, res) => {
     // update the bet
     // store it back to user bets table
     // delete it from root bets table
-    wssPrivateBroadcast(user_id, "bet-resolve", bet);
-  }, 1000 * 5);
+    console.log("bet-resolve", bet);
+    // wssPrivateBroadcast(user_id, "bet-resolve", bet);
+  }, 1000 * BET_TIMEOUT);
   res.json(bet);
 });
 

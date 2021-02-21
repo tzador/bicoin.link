@@ -64,9 +64,9 @@ async function place_bet(is_up) {
   const ticker_el = document.getElementById("ticker");
   const login_el = document.getElementById("login");
   const logout_el = document.getElementById("logout");
-  const score_el = document.getElementById("score");
   const buttons_el = document.getElementById("buttons");
   const the_score_el = document.getElementById("the-score");
+  const score_cheat_el = document.getElementById("score-cheat");
   let last_auth_token = -1;
   let last_ticker_seconds = -1;
   let last_score = null;
@@ -78,21 +78,21 @@ async function place_bet(is_up) {
         login_el.style.display = "none";
         logout_el.style.display = "block";
         logout_el.innerText = "Logout @" + state.token;
-        score_el.style.display = "flex";
         buttons_el.style.display = "flex";
         the_score_el.style.display = "block";
+        score_cheat_el.style.display = "flex";
       } else {
         login_el.style.display = "block";
         logout_el.style.display = "none";
         logout_el.style.innerText = "";
-        score_el.style.display = "none";
         buttons_el.style.display = "none";
         the_score_el.style.display = "none";
+        score_cheat_el.style.display = "none";
       }
     }
 
     if (last_score == null || last_score != state.score) {
-      the_score_el.innerHTML = "Score = " + state.score;
+      the_score_el.innerText = state.score.toString();
       last_score = state.score;
     }
 
@@ -101,7 +101,7 @@ async function place_bet(is_up) {
       const date = format_date(state.ticker.seconds);
       let price_str = state.ticker.price.toFixed(3).toString();
       while (price_str.length < 9) price_str = price_str + "0";
-      const ticker_value = `${date} &nbsp; 1 BTC = <span style="color: white">${price_str}</span> USDT`;
+      const ticker_value = `${date} 1BTC=<span style="color: white">${price_str}</span>USDT`;
       ticker_el.innerHTML = ticker_value;
     }
 

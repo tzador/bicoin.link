@@ -23,14 +23,23 @@ a:hover {
   color: white;
 }
 
+.row {
+  display: flex;
+  flex-direction: row;
+}
+.column {
+  display: flex;
+  flex-direction: column;
+}
 .gap {
   width: 16px;
   height: 16px;
 }
-
-.row {
-  display: flex;
-  flex-direction: row;
+.grow {
+  flex-grow: 1;
+}
+.align-end {
+  align-items: flex-end;
 }
 
 #background {
@@ -61,7 +70,6 @@ a:hover {
   top: 0;
   height: 48px;
   line-height: 48px;
-  display: flex;
 }
 
 #top-left {
@@ -91,6 +99,21 @@ a:hover {
   opacity: 0.5;
 }
 
+#ticker {
+  position: relative;
+  left: 8px;
+  top: -16px;
+  font-family: "Roboto Mono", monospace;
+  font-size: 12px;
+  line-height: 48px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#score-cheat {
+  position: relative;
+  top: 8px;
+}
+
 @keyframes rotation {
   from {
     transform: rotate(360deg);
@@ -98,13 +121,6 @@ a:hover {
   to {
     transform: rotate(0deg);
   }
-}
-
-#ticker {
-  font-family: "Roboto Mono", monospace;
-  font-size: 12px;
-  line-height: 48px;
-  color: rgba(255, 255, 255, 0.5);
 }
 
 #buttons {

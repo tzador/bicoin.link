@@ -21,23 +21,23 @@
         <div id="logo"></div>
         <div id="title">BiCoin.link</div>
       </a>
-      <div class="gap"></div>
       <div id="ticker">ticker</div>
     </div>
-    <div id="top-right">
-      <div id="score" class="row">
-        <span id="the-score">Score = 0</span>
+    <div id="top-right" class="column align-end">
+      <div class="row align-end">
+        <div id="the-score">0</div>
         <div class="gap"></div>
+        <a id="login" onclick="login()">Login</a>
+        <a id="logout" onclick="logout()">Logout</a>
+      </div>
+      <div id="score-cheat" class="row">
+        <div class="grow"></div>
         <a onclick="plusOne()">+1</a>
         <div class="gap"></div>
         <a onclick="reset()">0</a>
         <div class="gap"></div>
         <a onclick="minusOne()">-1</a>
-        <div class="gap"></div>
       </div>
-      <a id="login" onclick="login()">Login</a>
-      <a id="logout" onclick="logout()">Logout</a>
-      <div class="gap"></div>
     </div>
     <div id="buttons">
       <div onclick="javascript:place_bet(true)">bet up</div>

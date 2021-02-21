@@ -40,7 +40,6 @@ WebSocket
 - render zoom
 - render local times
 - render open and close/current time of the bet in the bet list
-- render responsivly / mobile friendly
 - animate min/max price
 - implement disallow overlaping bets
 - impleent pub/sub for cross server broadcast
@@ -52,6 +51,15 @@ WebSocket
 - record a screen recording and speed it up as gif
 - google/github auth
 
+# DONE
+
+- render responsivly / mobile friendly
+- render price history
+- https redirect
+- retina support / devicePixelRatio / DPI
+- deploy using CDK to AWS
+- animated favicon
+
 # WISH LIST
 
 - render bets as lines
@@ -61,11 +69,3 @@ WebSocket
 - Svelte client
 - Flutter client
 - Convert to TypeScript
-
-# DONE
-
-- render price history
-- https redirect
-- retina support / devicePixelRatio / DPI
-- deploy using CDK to AWS
-- animated favicon
