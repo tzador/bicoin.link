@@ -1,6 +1,6 @@
 const speed_x = 8;
-let shift_x = 264;
-let bets_width = 274;
+const bets_width = 260;
+let shift_x = 0;
 
 let price_min = Number.MAX_VALUE;
 let price_max = Number.MIN_VALUE;
@@ -34,12 +34,9 @@ function render_init(history) {
   }
   if (window.innerWidth < 720) {
     shift_x = 80;
-    bets_width = 274;
   } else {
     shift_x = 274;
-    bets_width = 274;
   }
-  console.log(bets_width);
 }
 
 function render_zebra(ctx, history) {
@@ -111,28 +108,12 @@ function render_history(ctx, history, current_price) {
 }
 
 function render_bets(ctx, bets) {
-  // {
-  //   ctx.save();
-  //   for (const bet of bets) {
-  //     const x = seconds_to_x(bet.seconds);
-  //     const y = price_to_y(bet.open_price);
-  //     const w = speed_x * 60;
-  //     if (bet.is_up) {
-  //       ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
-  //       ctx.fillRect(x, 0, w, y);
-  //     } else {
-  //       ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
-  //       ctx.fillRect(x, y, w, height - y);
-  //     }
-  //   }
-  //   ctx.restore();
-  // }
   {
     ctx.save();
     for (const bet of bets) {
-      const x0 = seconds_to_x(bet.seconds);
+      const x0 = seconds_to_x(bet.open_seconds);
       const y0 = price_to_y(bet.open_price);
-      const x1 = seconds_to_x(bet.seconds + 60);
+      const x1 = seconds_to_x(bet.open_seconds + 60);
       const y1 = price_to_y(bet.close_price || anim_price);
       ctx.beginPath();
       ctx.moveTo(x0, y0);
@@ -147,9 +128,10 @@ function render_bets(ctx, bets) {
   }
   {
     ctx.save();
-    let y = 48 * dpi;
+    ctx.font = 12 * dpi + 'px "Roboto Mono", monospace';
+    let y = 64 * dpi;
     for (const bet of bets) {
-      const diff = Math.floor(seconds_now - bet.seconds);
+      const diff = Math.floor(seconds_now - bet.open_seconds);
       const capped = Math.max(0, Math.min(60, diff));
       ctx.save();
       ctx.translate(8 * dpi, 8 * dpi);
@@ -166,9 +148,13 @@ function render_bets(ctx, bets) {
       }
       ctx.fillRect(0, y, (1 - capped / 60) * bets_width * dpi, 32 * dpi);
       ctx.fillStyle = "white";
-      const text = format_date(bet.seconds);
-      ctx.fillText(text, 8 * dpi, y + 22 * dpi);
-      ctx.fillText("loose :(", 200 * dpi, y + 22 * dpi);
+      const text_open = format_date(bet.open_seconds);
+      ctx.fillText(text_open, 8 * dpi, y + 22 * dpi);
+      const close_seconds = bet.close_seconds || seconds_now;
+      const text_close = "-" + format_date(close_seconds).split(" ")[1].split(".")[0];
+      ctx.fillText(text_close, 146 * dpi, y + 22 * dpi);
+
+      ctx.fillText(JSON.stringify(bet.win), 216 * dpi, y + 22 * dpi);
       ctx.restore();
       y += 40 * dpi;
     }

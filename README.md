@@ -50,6 +50,7 @@ WebSocket
 - write tests
 - record a screen recording and speed it up as gif
 - google/github auth
+- job queue to resolve bets
 
 # DONE
 

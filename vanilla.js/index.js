@@ -56,7 +56,7 @@ function plusOne() {
 }
 
 async function place_bet(is_up) {
-  state.bets.unshift(await restPost("/rest/bets/btcusdt", { is_up }));
+  restPost("/rest/bets/btcusdt", { is_up });
 }
 
 // # Mirror
@@ -77,7 +77,7 @@ async function place_bet(is_up) {
       if (state.token) {
         login_el.style.display = "none";
         logout_el.style.display = "block";
-        logout_el.innerText = "Logout @" + state.token;
+        logout_el.innerHTML = "@" + state.token + " <span style='color: dodgerblue'>Logout</span>";
         buttons_el.style.display = "flex";
         the_score_el.style.display = "block";
         score_cheat_el.style.display = "flex";
@@ -92,7 +92,7 @@ async function place_bet(is_up) {
     }
 
     if (last_score == null || last_score != state.score) {
-      the_score_el.innerText = state.score.toString();
+      the_score_el.innerText = "⭐" + state.score;
       last_score = state.score;
     }
 
@@ -156,6 +156,19 @@ function onPublicEvent(tag, data) {
 function onPrivateEvent(tag, data) {
   if (tag == "update-score") {
     state.score = data.score;
+  }
+  if (tag == "bet-insert") {
+    state.bets.push(data);
+    // Truncate to the recent 8 bets
+    if (state.bets.length > 8) state.bets.shift();
+  }
+  if (tag == "bet-resolve") {
+    const newBets = [];
+    for (const bet of state.bets) {
+      if (bet.bet_id == data.bet_id) newBets.push(data);
+      else newBets.push(bet);
+    }
+    state.bets = newBets;
   }
 }
 

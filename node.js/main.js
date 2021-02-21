@@ -1,12 +1,17 @@
 require("dotenv").config();
 
-const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
 const body_parser = require("body-parser");
+const express = require("express");
+const WebSocket = require("ws");
+const http = require("http");
+
+const store = require("./store");
 
 const BET_TIMEOUT = 5; // should be 60
 const PORT = 8080;
+
+let last_seconds = 0;
+let last_price = 0;
 
 const app = express();
 app.set("json spaces", 4);
@@ -31,9 +36,6 @@ server.on("upgrade", function upgrade(req, socket, head) {
     socket.destroy();
   }
 });
-
-const store = require("./store");
-const { Console } = require("console");
 
 // # REST API
 
@@ -70,23 +72,26 @@ app.get("/rest/history/:ticker", async (req, res) => {
 });
 
 app.get("/rest/bets/:ticker", async (req, res) => {
-  const user_id = req.headers["auth-token"];
-  if (!user_id) return res.json(null);
-  res.json(await store.getBets(req.params.ticker, user_id));
+  const userId = req.headers["auth-token"];
+  if (!userId) return res.json(null);
+  res.json(await store.getBets(req.params.ticker, userId));
 });
 
 app.post("/rest/bets/:ticker", async (req, res) => {
-  const user_id = req.headers["auth-token"];
-  if (!user_id) return res.json(null);
-  const bet = await store.newBet(req.params.ticker, user_id, req.body.is_up);
-  wssPrivateBroadcast(user_id, "bet-update", bet);
+  if (!req.userId) return res.json(null);
+  const bet = await store.newBet(req.params.ticker, req.userId, last_seconds, last_price, req.body.is_up);
+  wssPrivateBroadcast(req.userId, "bet-insert", bet);
   setTimeout(async () => {
-    // const close_ticker = JSON.parse(await redis.get("ticker#" + ticker));
-    // update the bet
-    // store it back to user bets table
-    // delete it from root bets table
-    console.log("bet-resolve", bet);
-    // wssPrivateBroadcast(user_id, "bet-resolve", bet);
+    bet.close_price = last_price;
+    bet.close_seconds = last_seconds;
+    if (bet.is_up) bet.win = bet.open_price < bet.close_price;
+    else bet.win = bet.open_price > bet.close_price;
+    await store.saveBet(bet);
+    wssPrivateBroadcast(req.userId, "bet-resolve", bet);
+    const diff = bet.win ? +1 : -1;
+    const score = await store.diffScore(req.params.ticker, req.userId, diff);
+    const scoreInfo = { ticker: req.params.ticker, score };
+    wssPrivateBroadcast(req.userId, "update-score", scoreInfo);
   }, 1000 * BET_TIMEOUT);
   res.json(bet);
 });
@@ -108,17 +113,21 @@ function wssPublicBroadcast(tag, data) {
 wss_private.on("connection", function connection(ws) {
   ws.on("message", function connection(message) {
     const event = JSON.parse(message);
-    if (event.token) ws.user_id = event.token;
+    if (event.token) ws.userId = event.token;
   });
 });
 
-function wssPrivateBroadcast(user_id, tag, data) {
+function wssPrivateBroadcast(userId, tag, data) {
   for (const ws of wss_private.clients) {
-    if (ws.readyState === WebSocket.OPEN && ws.user_id == user_id) {
+    if (ws.readyState === WebSocket.OPEN && ws.userId == userId) {
       ws.send(JSON.stringify({ tag, data }));
     }
   }
 }
 
 // TODO possibly simplify and avoid the queue.
-require("./binance").connect("btcusdt", wssPublicBroadcast);
+require("./binance").connect("btcusdt", (ticker, seconds, price) => {
+  wssPublicBroadcast("ticker#" + ticker, { ticker, seconds, price });
+  last_seconds = seconds;
+  last_price = price;
+});

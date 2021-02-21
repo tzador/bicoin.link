@@ -3,36 +3,26 @@ const BINANCE_WS_URL = "wss://stream.binance.com:9443/ws/btcusdt@aggTrade";
 const WebSocket = require("ws");
 const store = require("./store");
 
-let last_seconds = 0;
-let last_price = 0;
+const RECONNECT_TIMEOUT_MS = 100;
 
-exports.connect = (ticker, wssPublicBroadcast) => {
-  const queue = [];
-  (async function processBinance() {
-    while (queue.length) {
-      const { seconds, price } = queue.shift();
-      if (last_seconds && Math.floor(last_seconds) != Math.floor(seconds)) {
-        const seconds_floor = Math.floor(seconds);
-        store.setTicker(ticker, seconds_floor, last_price);
-        wssPublicBroadcast("ticker#" + ticker, {
-          ticker,
-          seconds: seconds_floor,
-          price: last_price,
-        });
-      }
-      last_seconds = seconds;
-      last_price = price;
-    }
-    setTimeout(processBinance, 1);
-  })();
-  (async function connect_to_binance() {
+let lastSeconds = 0;
+let lastPrice = 0;
+
+exports.connect = (ticker, callback) => {
+  (function reconnect() {
     const ws = new WebSocket(BINANCE_WS_URL);
-    ws.on("close", () => setTimeout(connect_to_binance, 100));
+    ws.on("close", () => setTimeout(reconnect, RECONNECT_TIMEOUT_MS));
     ws.on("message", (message) => {
       const data = JSON.parse(message);
       const seconds = data.T / 1000.0;
       const price = parseFloat(data.p);
-      queue.push({ seconds, price });
+      if (lastSeconds && Math.floor(lastSeconds) != Math.floor(seconds)) {
+        const secondsRounded = Math.floor(seconds);
+        store.setTicker(ticker, secondsRounded, lastPrice);
+        callback(ticker, secondsRounded, lastPrice);
+      }
+      lastSeconds = seconds;
+      lastPrice = price;
     });
   })();
 };

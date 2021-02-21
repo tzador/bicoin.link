@@ -114,6 +114,10 @@ a:hover {
   top: 8px;
 }
 
+#logout {
+  color: white;
+}
+
 @keyframes rotation {
   from {
     transform: rotate(360deg);
