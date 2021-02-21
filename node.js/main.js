@@ -1,22 +1,15 @@
-require("dotenv");
+require("dotenv").config();
+
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
-const Redis = require("ioredis");
-const uuid = require("uuid");
 const body_parser = require("body-parser");
 
 const port = 8080;
-const binance_ws_url = "wss://stream.binance.com:9443/ws/btcusdt@aggTrade";
-const history_length = 60 * 10;
-const ticker = "btcusdt";
-
-let last_time = 0;
-let last_price = 0;
 
 const app = express();
 app.set("json spaces", 4);
-app.use(express.static("vanilla.js"));
+app.use(express.static("../vanilla.js"));
 
 const server = http.createServer(app);
 server.listen(port, () => console.log("http://localhost:" + port));
@@ -38,76 +31,7 @@ server.on("upgrade", function upgrade(req, socket, head) {
   }
 });
 
-// # Store
-class RedisStore {
-  constructor(redis) {
-    this.redis = redis;
-  }
-
-  async set_ticker(ticker, seconds, price) {
-    const json = JSON.stringify({ ticker, seconds, price });
-    await this.redis.set("ticker#" + ticker, json);
-    await this.redis.zadd("history#" + ticker, seconds, json);
-  }
-
-  async getTicker(ticker) {
-    const value = await this.redis.get("ticker#" + ticker);
-    return JSON.parse(value);
-  }
-
-  async getHistory(ticker) {
-    return (await this.redis.zrange("history#" + ticker, -history_length, -1)).map(JSON.parse);
-  }
-
-  async getBets(ticker, user_id) {
-    const key = "bets#" + ticker + "#" + user_id;
-    return (await this.redis.zrange(key, 0, -1)).map(JSON.parse);
-  }
-
-  scoreKey(ticker, user_id) {
-    return "score#" + ticker + "#" + user_id;
-  }
-
-  async getScore(ticker, user_id) {
-    const value = await this.redis.get(this.scoreKey(ticker, user_id));
-    return JSON.parse(value);
-  }
-
-  async setScore(ticker, user_id, score) {
-    const json = JSON.stringify(score);
-    await this.redis.set(this.scoreKey(ticker, user_id), json);
-  }
-
-  async diffScore(ticker, user_id, diff) {
-    const score = await this.getScore(ticker, user_id);
-    await this.setScore(ticker, user_id, score + diff);
-  }
-
-  async putBet(ticker, user_id, is_up) {
-    const seconds = Math.ceil(last_time);
-    const bet = {
-      bet_id: uuid.v4(),
-      user_id,
-      seconds,
-      is_up,
-      open_price: last_price,
-      close_price: null,
-      win: null,
-    };
-    const key = "bets#" + ticker + "#" + user_id;
-    await this.redis.zadd(key, seconds, JSON.stringify(bet));
-    wssPrivateBroadcast(user_id, "bet-update", bet);
-    setTimeout(async () => {
-      const close_ticker = JSON.parse(await this.redis.get("ticker#" + ticker));
-      // update the bet
-      // store it back to user bets table
-      // delete it from root bets table
-      wssPrivateBroadcast(user_id, "bet-resolve", bet);
-    }, 1000 * 5);
-    return bet;
-  }
-}
-const store = new RedisStore(new Redis(process.env.REDIS_URL));
+const store = require("./store");
 
 // # REST API
 app.use(body_parser.json());
@@ -177,35 +101,5 @@ function wssPrivateBroadcast(user_id, tag, data) {
   }
 }
 
-// # Binance
 // TODO possibly simplify and avoid the queue.
-(function connectToBinance() {
-  const queue = [];
-  (async function processBinance() {
-    while (queue.length) {
-      const { time, price } = queue.shift();
-      if (last_time && Math.floor(last_time) != Math.floor(time)) {
-        const seconds = Math.floor(time);
-        store.set_ticker(ticker, seconds, last_price);
-        wssPublicBroadcast("ticker#" + ticker, {
-          ticker,
-          seconds,
-          price: last_price,
-        });
-      }
-      last_time = time;
-      last_price = price;
-    }
-    setTimeout(processBinance, 1); // TODO replace with process.nextTick
-  })();
-  (async function connect_to_binance() {
-    const ws = new WebSocket(binance_ws_url);
-    ws.on("close", () => setTimeout(connect_to_binance, 100));
-    ws.on("message", (message) => {
-      const data = JSON.parse(message);
-      const time = data.T / 1000.0;
-      const price = parseFloat(data.p);
-      queue.push({ time, price });
-    });
-  })();
-})();
+require("./binance").connect(wssPublicBroadcast);
