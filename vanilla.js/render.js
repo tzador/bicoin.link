@@ -223,15 +223,15 @@ function renderBets(ctx, bets) {
       ctx.save();
       ctx.translate(8 * dpi, 8 * dpi);
       if (bet.is_up) {
-        ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
+        ctx.fillStyle = "rgba(0, 127, 0, 1)";
       } else {
-        ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
+        ctx.fillStyle = "rgba(127, 0, 0, 1)";
       }
       ctx.fillRect(0, y, bets_width * dpi, 32 * dpi);
       if (bet.is_up) {
-        ctx.fillStyle = "rgba(0, 255, 0, 0.5)";
+        ctx.fillStyle = "rgba(0, 255, 0, 1)";
       } else {
-        ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+        ctx.fillStyle = "rgba(255, 0, 0, 1)";
       }
       ctx.fillRect(0, y, (1 - capped / 60) * bets_width * dpi, 32 * dpi);
       ctx.fillStyle = "white";
