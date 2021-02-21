@@ -46,6 +46,7 @@ WebSocket
 - implement scores
 - implement deletion of old bets (or just keep the last 11)
 - implement db transactions / redis MULTI command
+- implement server side check for unresolved bets to prevent betting in parrallel
 - sound/speach
 - write tests
 - record a screen recording and speed it up as gif

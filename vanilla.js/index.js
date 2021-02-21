@@ -43,19 +43,7 @@ function logout() {
   recoonectPrivateWS();
 }
 
-function minusOne() {
-  restPost("/rest/score/btcusdt", { diff: -1 });
-}
-
-function reset() {
-  restPost("/rest/score/btcusdt", { reset: true });
-}
-
-function plusOne() {
-  restPost("/rest/score/btcusdt", { diff: +1 });
-}
-
-async function place_bet(is_up) {
+async function placeBet(is_up) {
   restPost("/rest/bets/btcusdt", { is_up });
 }
 
@@ -66,7 +54,6 @@ async function place_bet(is_up) {
   const logout_el = document.getElementById("logout");
   const buttons_el = document.getElementById("buttons");
   const the_score_el = document.getElementById("the-score");
-  const score_cheat_el = document.getElementById("score-cheat");
   let last_auth_token = -1;
   let last_ticker_seconds = -1;
   let last_score = null;
@@ -78,18 +65,21 @@ async function place_bet(is_up) {
         login_el.style.display = "none";
         logout_el.style.display = "block";
         logout_el.innerHTML = "@" + state.token + " <span style='color: dodgerblue'>Logout</span>";
-        buttons_el.style.display = "flex";
         the_score_el.style.display = "block";
-        score_cheat_el.style.display = "flex";
       } else {
         login_el.style.display = "block";
         logout_el.style.display = "none";
         logout_el.style.innerText = "";
-        buttons_el.style.display = "none";
         the_score_el.style.display = "none";
-        score_cheat_el.style.display = "none";
       }
     }
+    // TODO: Update only lazily when changed.
+    let hasActiveBets = false;
+    for (const bet of state.bets) {
+      if (bet.win === null) hasActiveBets = true;
+    }
+    if (hasActiveBets) buttons_el.style.display = "none";
+    else if (state.token) buttons_el.style.display = "flex";
 
     if (last_score == null || last_score != state.score) {
       the_score_el.innerText = "⭐" + state.score;
@@ -149,7 +139,6 @@ function onPublicEvent(tag, data) {
   if (tag == "ticker#btcusdt") {
     state.ticker = data;
     state.history.push(data);
-    update_favicon();
   }
 }
 
@@ -204,9 +193,7 @@ async function fetchBets() {
 
 async function fetchScore() {
   if (!state.token) return;
-  console.log("fetch score");
   state.score = await restGet("/rest/score/btcusdt");
-  console.log("fetch score res", state.score);
 }
 
 // # Render

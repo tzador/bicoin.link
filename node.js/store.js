@@ -1,7 +1,7 @@
 const Redis = require("ioredis");
 const uuid = require("uuid");
 
-const HISTORY_LENGTH = 60 * 2;
+const HISTORY_LENGTH = 60 * 10; // 10 minutes
 
 const redis = new Redis(process.env.REDIS_URL);
 

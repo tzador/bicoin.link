@@ -7,7 +7,7 @@ const http = require("http");
 
 const store = require("./store");
 
-const BET_TIMEOUT = 5; // should be 60
+const BET_TIMEOUT = 60; // should be 60
 const PORT = 8080;
 
 let last_seconds = 0;
@@ -48,19 +48,6 @@ app.use((req, res, next) => {
 app.get("/rest/score/:ticker", async (req, res) => {
   if (!req.userId) return res.json(null);
   res.json(await store.getScore(req.params.ticker, req.userId));
-});
-
-app.post("/rest/score/:ticker", async (req, res) => {
-  if (!req.userId) return res.json(null);
-  let newScore;
-  if (req.body.reset) {
-    newScore = await store.setScore(req.params.ticker, req.userId, 0);
-  } else if (req.body.diff) {
-    newScore = await store.diffScore(req.params.ticker, req.userId, req.body.diff);
-  } else return res.json(null);
-  const scoreInfo = { ticker: req.params.ticker, score: newScore };
-  wssPrivateBroadcast(req.userId, "update-score", scoreInfo);
-  res.json(scoreInfo);
 });
 
 app.get("/rest/ticker/:ticker", async (req, res) => {

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <title>bicoin.link</title>
     <link id="favicon" rel="icon" type="image/png" href="favicon.png" />
-    <script src="favicon.js"></script>
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
@@ -30,18 +29,10 @@
         <a id="login" onclick="login()">Login</a>
         <a id="logout" onclick="logout()">Logout</a>
       </div>
-      <div id="score-cheat" class="row">
-        <div class="grow"></div>
-        <a onclick="plusOne()">+1</a>
-        <div class="gap"></div>
-        <a onclick="reset()">0</a>
-        <div class="gap"></div>
-        <a onclick="minusOne()">-1</a>
-      </div>
     </div>
     <div id="buttons">
-      <div onclick="javascript:place_bet(true)">bet up</div>
-      <div onclick="javascript:place_bet(false)">bet down</div>
+      <div onclick="javascript:placeBet(true)">bet up</div>
+      <div onclick="javascript:placeBet(false)">bet down</div>
     </div>
     <script src="render.js"></script>
     <script src="index.js"></script>
