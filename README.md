@@ -39,7 +39,7 @@ WebSocket
 - render price labels
 - render zoom
 - render local times
-- render open and close time of the bet in the bet list(or current time if not yet resolved)
+- render open and close/current time of the bet in the bet list
 - render responsivly / mobile friendly
 - animate min/max price
 - implement disallow overlaping bets
@@ -50,6 +50,7 @@ WebSocket
 - sound/speach
 - write tests
 - record a screen recording and speed it up as gif
+- google/github auth
 
 # WISH LIST
 
@@ -59,6 +60,7 @@ WebSocket
 - React clienet
 - Svelte client
 - Flutter client
+- Convert to TypeScript
 
 # DONE
 
