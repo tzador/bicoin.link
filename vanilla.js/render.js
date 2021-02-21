@@ -44,9 +44,9 @@ function renderZebra(ctx, history) {
   let ztime = Math.floor(seconds_now) + 60 * 10;
   ctx.save();
   while (true) {
-    const x0 = seconds_to_x(ztime - 1);
+    const x0 = secondsToX(ztime - 1);
     const y0 = 0;
-    const x1 = seconds_to_x(ztime);
+    const x1 = secondsToX(ztime);
     const y1 = height;
     if (Math.floor(ztime) % 2 == 0) {
       ctx.fillStyle = "rgba(255, 255, 255, 0.07)";
@@ -57,7 +57,7 @@ function renderZebra(ctx, history) {
     ztime -= 1;
     if (x0 < 0) break;
   }
-  const zero_x = seconds_to_x(seconds_now);
+  const zero_x = secondsToX(seconds_now);
   ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
   ctx.fillRect(zero_x, 0, zero_x + width, height);
   ctx.restore();
@@ -74,10 +74,10 @@ function renderHistory(ctx, history, current_price) {
   let first_y = 0;
   let i = 0;
   for (const { seconds, price } of history) {
-    let x = seconds_to_x(seconds);
-    let y = price_to_y(price);
+    let x = secondsToX(seconds);
+    let y = priceToY(price);
     if (i++ == history.length - 1) {
-      y = price_to_y(anim_price);
+      y = priceToY(anim_price);
     }
     last_x = x;
     last_y = y;
@@ -92,7 +92,7 @@ function renderHistory(ctx, history, current_price) {
   ctx.lineTo(width, last_y);
   ctx.strokeStyle = "yellow";
   ctx.lineWidth = 2 * dpi;
-  const zero_x = seconds_to_x(seconds_now);
+  const zero_x = secondsToX(seconds_now);
   if (anim_price) ctx.lineTo(zero_x, last_y);
   ctx.stroke();
 
@@ -110,39 +110,46 @@ function renderHistory(ctx, history, current_price) {
 
 function renderLabels() {
   // Vertical time indicators
-  const w = seconds_to_x(60) - seconds_to_x(0);
-  let seconds = Math.ceil(seconds_now / 60) * 60;
-  for (let i = 0; i < 8; i++) {
-    ctx.save();
+  {
+    const w = secondsToX(60) - secondsToX(0);
+    let seconds = Math.ceil(seconds_now / 60) * 60;
+    for (let i = 0; i < 8; i++) {
+      ctx.save();
 
-    // Draw the vertical lines
-    ctx.translate(seconds_to_x(seconds), 0);
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, height);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
-    ctx.setLineDash([dpi * 8, dpi * 8]);
-    ctx.lineWidth = 2 * dpi;
-    ctx.stroke();
+      // Draw the vertical lines
+      ctx.translate(secondsToX(seconds), 0);
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, height);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.setLineDash([dpi * 8, dpi * 8]);
+      ctx.lineWidth = 2 * dpi;
+      ctx.stroke();
 
-    // Draw the vertical labels
-    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-    const text = new Date(seconds * 1000).toJSON().split("T")[1].split(".")[0];
-    ctx.fillText(text, 8 * dpi, height - 56 * dpi);
+      // Draw the vertical labels
+      ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+      const text = new Date(seconds * 1000).toJSON().split("T")[1].split(".")[0];
+      ctx.fillText(text, 8 * dpi, height - 56 * dpi);
 
-    ctx.restore();
-    seconds -= 60;
+      ctx.restore();
+      seconds -= 60;
+    }
+  }
+
+  // Horizontal price indicators
+  {
   }
 }
 
 function renderBets(ctx, bets) {
+  // Renders the bets on the Chart
   {
     for (const bet of bets) {
       ctx.save();
-      const x0 = seconds_to_x(bet.open_seconds);
-      const y0 = price_to_y(bet.open_price);
-      const x1 = seconds_to_x(bet.open_seconds + 60);
-      const y1 = price_to_y(bet.close_price || anim_price);
+      const x0 = secondsToX(bet.open_seconds);
+      const y0 = priceToY(bet.open_price);
+      const x1 = secondsToX(bet.open_seconds + 60);
+      const y1 = priceToY(bet.close_price || anim_price);
       ctx.beginPath();
       ctx.moveTo(x0, y0);
       ctx.lineTo(x1, y1);
@@ -152,16 +159,23 @@ function renderBets(ctx, bets) {
       ctx.lineWidth = 4 * dpi;
       if (bet.win === null) {
         ctx.globalAlpha = (Math.sin(Date.now() / 100) + 1) / 2.0;
-      } else {
-        if (bet.win == false) {
-          ctx.setLineDash([dpi * 8, dpi * 8]);
-        } else {
-        }
       }
+      let isGood = false;
+      if (bet.win === null) {
+        isGood = (bet.is_up && bet.open_price < anim_price) || (!bet.is_up && bet.open_price > anim_price);
+      } else {
+        isGood = (bet.is_up && bet.open_price < bet.close_price) || (!bet.is_up && bet.open_price > bet.close_price);
+      }
+      if (!isGood) {
+        ctx.setLineDash([dpi * 8, dpi * 8]);
+      }
+
       ctx.stroke();
       ctx.restore();
     }
   }
+
+  // Renders the Bets Table
   {
     ctx.save();
     ctx.font = 12 * dpi + 'px "Roboto Mono", monospace';
@@ -190,7 +204,10 @@ function renderBets(ctx, bets) {
       const text_close = "-" + format_date(close_seconds).split(" ")[1].split(".")[0];
       ctx.fillText(text_close, 146 * dpi, y + 22 * dpi);
 
-      ctx.fillText(JSON.stringify(bet.win), 216 * dpi, y + 22 * dpi);
+      let winText = "";
+      if (bet.win === true) winText = "win";
+      if (bet.win === false) winText = "loose";
+      ctx.fillText(winText, 216 * dpi, y + 22 * dpi);
       ctx.restore();
       y += 40 * dpi;
     }
@@ -198,10 +215,12 @@ function renderBets(ctx, bets) {
   }
 }
 
-function seconds_to_x(seconds) {
-  return width - (seconds_now - seconds) * speed_x - shift_x * devicePixelRatio;
+// Time in seconds to x pixel coordinates
+function secondsToX(seconds) {
+  return width - (seconds_now - seconds) * speed_x - shift_x * dpi;
 }
 
-function price_to_y(price) {
+// Price in USDT to y pixel coordinates
+function priceToY(price) {
   return height - 2 * 48 * dpi - (height - 4 * 48 * dpi) * ((price - price_min) / (price_max - price_min));
 }
