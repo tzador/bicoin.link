@@ -20,19 +20,25 @@ services:
       REDIS_URL: redis://redis
     entrypoint: nodemon main.js
     scale: 1
-    depends_on:
-      - redis
+    # depends_on:
+    #   - mongo
+    #   - redis
 
-  redis:
-    image: "redis:alpine"
-    logging:
-      driver: none
+  # mongo:
+  #   image: "mongo"
+  #   # logging:
+  #   #   driver: none
 
-  redjs:
-    build: ./red.js
-    ports:
-      - 6789:6789
-    volumes:
-      - ./red.js/red.js:/red.js/red.js
-    entrypoint: nodemon
-    scale: 1
+  # redis:
+  #   image: "redis"
+  #   logging:
+  #     driver: none
+
+  # redjs:
+  #   build: ./red.js
+  #   ports:
+  #     - 6789:6789
+  #   volumes:
+  #     - ./red.js/red.js:/red.js/red.js
+  #   entrypoint: nodemon
+  #   scale: 1

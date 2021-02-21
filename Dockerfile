@@ -10,6 +10,7 @@ COPY ./node.js/package-lock.json ./
 RUN npm install
 
 COPY ./vanilla.js ./vanilla.js
+COPY ./node.js/.env ./
 COPY ./node.js/main.js ./
 
 EXPOSE 8080
