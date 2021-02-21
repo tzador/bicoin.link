@@ -47,13 +47,14 @@ async function placeBet(is_up) {
   restPost("/rest/bets/btcusdt", { is_up });
 }
 
-// # Mirror
+// # Mirror state to DOM
+// React would be nice here
 {
-  const ticker_el = document.getElementById("ticker");
-  const login_el = document.getElementById("login");
-  const logout_el = document.getElementById("logout");
-  const buttons_el = document.getElementById("buttons");
-  const the_score_el = document.getElementById("the-score");
+  const tickerEl = document.getElementById("ticker");
+  const loginEl = document.getElementById("login");
+  const logoutEl = document.getElementById("logout");
+  const buttonsEl = document.getElementById("buttons");
+  const scoreEl = document.getElementById("the-score");
   let last_auth_token = -1;
   let last_ticker_seconds = -1;
   let last_score = null;
@@ -62,27 +63,27 @@ async function placeBet(is_up) {
     if (last_auth_token != state.token) {
       last_auth_token = state.token;
       if (state.token) {
-        login_el.style.display = "none";
-        logout_el.style.display = "block";
-        logout_el.innerHTML = "@" + state.token + " <span style='color: dodgerblue'>Logout</span>";
-        the_score_el.style.display = "block";
+        loginEl.style.display = "none";
+        logoutEl.style.display = "block";
+        logoutEl.innerHTML = "@" + state.token + " <span style='color: dodgerblue'>Logout</span>";
+        scoreEl.style.display = "block";
       } else {
-        login_el.style.display = "block";
-        logout_el.style.display = "none";
-        logout_el.style.innerText = "";
-        the_score_el.style.display = "none";
+        loginEl.style.display = "block";
+        logoutEl.style.display = "none";
+        logoutEl.style.innerText = "";
+        scoreEl.style.display = "none";
       }
     }
-    // TODO: Update only lazily when changed.
+    // TODO: Update only lazily when changed
     let hasActiveBets = false;
     for (const bet of state.bets) {
       if (bet.win === null) hasActiveBets = true;
     }
-    if (hasActiveBets) buttons_el.style.display = "none";
-    else if (state.token) buttons_el.style.display = "flex";
+    if (hasActiveBets) buttonsEl.style.display = "none";
+    else if (state.token) buttonsEl.style.display = "flex";
 
     if (last_score == null || last_score != state.score) {
-      the_score_el.innerText = "⭐" + state.score;
+      scoreEl.innerText = "⭐" + state.score;
       last_score = state.score;
     }
 
@@ -92,24 +93,21 @@ async function placeBet(is_up) {
       let price_str = state.ticker.price.toFixed(3).toString();
       while (price_str.length < 9) price_str = price_str + "0";
       const ticker_value = `${date} 1BTC=<span style="color: white">${price_str}</span>USDT`;
-      ticker_el.innerHTML = ticker_value;
+      tickerEl.innerHTML = ticker_value;
     }
 
     requestAnimationFrame(mirror);
   })();
 }
 
-// # WebSocket
-// TODO abstract these common bits away
+// # WebSocket Server
+// TODO: abstract these common bits away
 function reconnectPublicWS() {
   console.log("reconnectPublicWS");
   if (public_ws) public_ws.close();
   public_ws = new WebSocket(PUBLIC_WS_URL);
   public_ws.onclose = () => setTimeout(reconnectPublicWS, RECONNECT_TIMEOUT);
-  public_ws.onerror = (error) => {
-    console.error(error.message);
-    // setTimeout(reconnectPublicWS, RECONNECT_TIMEOUT);
-  };
+  public_ws.onerror = (error) => console.error(error);
   public_ws.onmessage = (message) => {
     const { tag, data } = JSON.parse(message.data);
     onPublicEvent(tag, data);
@@ -126,10 +124,7 @@ function reconnectPrivateWS() {
     private_ws.send(JSON.stringify({ token: state.token }));
   };
   private_ws.onclose = () => setTimeout(reconnectPrivateWS, RECONNECT_TIMEOUT);
-  private_ws.onerror = (error) => {
-    console.error(error.message);
-    // setTimeout(reconnectPrivateWS, RECONNECT_TIMEOUT);
-  };
+  private_ws.onerror = (error) => console.error(error);
   private_ws.onmessage = (message) => {
     const { tag, data } = JSON.parse(message.data);
     onPrivateEvent(tag, data);

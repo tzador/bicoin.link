@@ -18,13 +18,14 @@ function render(ctx, w, h, state) {
   if (state.history.length > 0) {
     anim_price = 0.9 * anim_price + 0.1 * state.history[state.history.length - 1].price;
   }
-  render_init(state.history);
-  render_history(ctx, state.history, anim_price);
-  render_bets(ctx, state.bets);
-  render_zebra(ctx, state.history);
+  renderInit(state.history);
+  renderZebra(ctx, state.history);
+  renderHistory(ctx, state.history);
+  renderLabels(ctx);
+  renderBets(ctx, state.bets);
 }
 
-function render_init(history) {
+function renderInit(history) {
   dpi = devicePixelRatio;
   price_min = Number.MAX_VALUE;
   price_max = Number.MIN_VALUE;
@@ -39,7 +40,7 @@ function render_init(history) {
   }
 }
 
-function render_zebra(ctx, history) {
+function renderZebra(ctx, history) {
   let ztime = Math.floor(seconds_now) + 60 * 10;
   ctx.save();
   while (true) {
@@ -62,7 +63,7 @@ function render_zebra(ctx, history) {
   ctx.restore();
 }
 
-function render_history(ctx, history, current_price) {
+function renderHistory(ctx, history, current_price) {
   if (history.length == 0) return;
   ctx.save();
   ctx.beginPath();
@@ -107,7 +108,34 @@ function render_history(ctx, history, current_price) {
   ctx.restore();
 }
 
-function render_bets(ctx, bets) {
+function renderLabels() {
+  // Vertical time indicators
+  const w = seconds_to_x(60) - seconds_to_x(0);
+  let seconds = Math.ceil(seconds_now / 60) * 60;
+  for (let i = 0; i < 8; i++) {
+    ctx.save();
+
+    // Draw the vertical lines
+    ctx.translate(seconds_to_x(seconds), 0);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, height);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+    ctx.setLineDash([dpi * 8, dpi * 8]);
+    ctx.lineWidth = 2 * dpi;
+    ctx.stroke();
+
+    // Draw the vertical labels
+    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+    const text = new Date(seconds * 1000).toJSON().split("T")[1].split(".")[0];
+    ctx.fillText(text, 8 * dpi, height - 56 * dpi);
+
+    ctx.restore();
+    seconds -= 60;
+  }
+}
+
+function renderBets(ctx, bets) {
   {
     for (const bet of bets) {
       ctx.save();
