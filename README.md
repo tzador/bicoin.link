@@ -1,3 +1,5 @@
+![](docs/screenshot.png)
+
 # bicoin.link
 
 Bet on the 1 minute BitCoin price fluctuations.
@@ -11,10 +13,6 @@ Please visit [bicoin.link](https://bicoin.link) to try it live.
 - `cd aws-stack && cdk deploy` deploy this stack to your default AWS account/region
 - `cd aws-stack && cdk diff` compare deployed stack with current state
 - `cd aws-stack && cdk synth` emits the synthesized CloudFormation template
-
-# Vanilla.js Web Client
-
-![](docs/screenshot.png)
 
 # Architecture
 
