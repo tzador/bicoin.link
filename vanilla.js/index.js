@@ -1,10 +1,10 @@
 const TOKEN = "auth_token";
-const ws_base_url = location.protocol.replace("http", "ws") + "//" + location.host;
-const public_ws_url = ws_base_url + "/ws/public";
-const private_ws_url = ws_base_url + "/ws/private";
+const WS_BASE_URL = location.protocol.replace("http", "ws") + "//" + location.host;
+const PUBLIC_WS_URL = WS_BASE_URL + "/ws/public";
+const PRIVATE_WS_URL = WS_BASE_URL + "/ws/private";
 const binance_ws_url = "wss://stream.binance.com:9443/ws/btcusdt@aggTrade";
 const rest_base_url = "";
-const reconnect_timeout_ms = 1000;
+const RECONNECT_TIMEOUT = 1000;
 
 const state = {
   token: localStorage.getItem(TOKEN) || null,
@@ -18,7 +18,7 @@ let private_ws = null;
 
 (function boot() {
   reconnectPublicWS();
-  recoonectPrivateWS();
+  reconnectPrivateWS();
   fetchHistory();
   fetchBets();
   fetchScore();
@@ -31,7 +31,7 @@ function login() {
     state.token = state.token.trim();
     localStorage.setItem(TOKEN, state.token);
   } else localStorage.removeItem(TOKEN);
-  recoonectPrivateWS();
+  reconnectPrivateWS();
   fetchBets();
   fetchScore();
 }
@@ -40,7 +40,7 @@ function logout() {
   state.token = null;
   state.bets = [];
   localStorage.removeItem(TOKEN);
-  recoonectPrivateWS();
+  reconnectPrivateWS();
 }
 
 async function placeBet(is_up) {
@@ -100,14 +100,15 @@ async function placeBet(is_up) {
 }
 
 // # WebSocket
+// TODO abstract these common bits away
 function reconnectPublicWS() {
+  console.log("reconnectPublicWS");
   if (public_ws) public_ws.close();
-  public_ws = new WebSocket(public_ws_url);
-  // public_ws.onclose = () =>
-  //   setTimeout(reconnectPublicWS, reconnect_timeout_ms);
+  public_ws = new WebSocket(PUBLIC_WS_URL);
+  public_ws.onclose = () => setTimeout(reconnectPublicWS, RECONNECT_TIMEOUT);
   public_ws.onerror = (error) => {
     console.error(error.message);
-    // setTimeout(reconnectPublicWS, reconnect_timeout_ms);
+    // setTimeout(reconnectPublicWS, RECONNECT_TIMEOUT);
   };
   public_ws.onmessage = (message) => {
     const { tag, data } = JSON.parse(message.data);
@@ -115,24 +116,30 @@ function reconnectPublicWS() {
   };
 }
 
-function recoonectPrivateWS() {
+function reconnectPrivateWS() {
+  console.log("reconnectPrivateWS");
   if (private_ws) private_ws.close();
   private = null;
   if (!state.token) return;
-  private_ws = new WebSocket(private_ws_url);
+  private_ws = new WebSocket(PRIVATE_WS_URL);
   private_ws.onopen = (error) => {
     private_ws.send(JSON.stringify({ token: state.token }));
   };
-  // private_ws.onclose = () =>
-  //   setTimeout(recoonectPrivateWS, reconnect_timeout_ms);
+  private_ws.onclose = () => setTimeout(reconnectPrivateWS, RECONNECT_TIMEOUT);
   private_ws.onerror = (error) => {
     console.error(error.message);
-    // setTimeout(recoonectPrivateWS, reconnect_timeout_ms);
+    // setTimeout(reconnectPrivateWS, RECONNECT_TIMEOUT);
   };
   private_ws.onmessage = (message) => {
     const { tag, data } = JSON.parse(message.data);
     onPrivateEvent(tag, data);
   };
+  (function ping() {
+    if (private_ws.readyState === WebSocket.OPEN) {
+      private_ws.send(JSON.stringify({ ping: true }));
+    }
+    setTimeout(ping, 1000);
+  })();
 }
 
 function onPublicEvent(tag, data) {
@@ -143,6 +150,7 @@ function onPublicEvent(tag, data) {
 }
 
 function onPrivateEvent(tag, data) {
+  console.log("onPrivateEvent", tag, data);
   if (tag == "update-score") {
     state.score = data.score;
   }

@@ -109,8 +109,8 @@ function render_history(ctx, history, current_price) {
 
 function render_bets(ctx, bets) {
   {
-    ctx.save();
     for (const bet of bets) {
+      ctx.save();
       const x0 = seconds_to_x(bet.open_seconds);
       const y0 = price_to_y(bet.open_price);
       const x1 = seconds_to_x(bet.open_seconds + 60);
@@ -122,9 +122,17 @@ function render_bets(ctx, bets) {
       else ctx.strokeStyle = "rgba(255, 0, 0, 1)";
       ctx.lineCap = "round";
       ctx.lineWidth = 4 * dpi;
+      if (bet.win === null) {
+        ctx.globalAlpha = (Math.sin(Date.now() / 100) + 1) / 2.0;
+      } else {
+        if (bet.win == false) {
+          ctx.setLineDash([dpi * 8, dpi * 8]);
+        } else {
+        }
+      }
       ctx.stroke();
+      ctx.restore();
     }
-    ctx.restore();
   }
   {
     ctx.save();

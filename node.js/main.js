@@ -20,17 +20,17 @@ app.use(express.static("../vanilla.js"));
 const server = http.createServer(app);
 server.listen(PORT, () => console.log("http://localhost:" + PORT));
 
-const wss_public = new WebSocket.Server({ noServer: true });
-const wss_private = new WebSocket.Server({ noServer: true });
+const wssPublic = new WebSocket.Server({ noServer: true });
+const wssPrivate = new WebSocket.Server({ noServer: true });
 
 server.on("upgrade", function upgrade(req, socket, head) {
   if (req.url === "/ws/public") {
-    wss_public.handleUpgrade(req, socket, head, (ws) => {
-      wss_public.emit("connection", ws, req);
+    wssPublic.handleUpgrade(req, socket, head, (ws) => {
+      wssPublic.emit("connection", ws, req);
     });
   } else if (req.url === "/ws/private") {
-    wss_private.handleUpgrade(req, socket, head, (ws) => {
-      wss_private.emit("connection", ws, req);
+    wssPrivate.handleUpgrade(req, socket, head, (ws) => {
+      wssPrivate.emit("connection", ws, req);
     });
   } else {
     socket.destroy();
@@ -84,12 +84,12 @@ app.post("/rest/bets/:ticker", async (req, res) => {
 });
 
 // # Public WebSocket API
-wss_public.on("connection", function connection(ws) {
+wssPublic.on("connection", function connection(ws) {
   ws.send(JSON.stringify({ tag: "hello", data: "public" }));
 });
 
 function wssPublicBroadcast(tag, data) {
-  for (const ws of wss_public.clients) {
+  for (const ws of wssPublic.clients) {
     if (ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ tag, data }));
     }
@@ -97,7 +97,7 @@ function wssPublicBroadcast(tag, data) {
 }
 
 // # Private WebSocket API
-wss_private.on("connection", function connection(ws) {
+wssPrivate.on("connection", function connection(ws) {
   ws.on("message", function connection(message) {
     const event = JSON.parse(message);
     if (event.token) ws.userId = event.token;
@@ -105,8 +105,9 @@ wss_private.on("connection", function connection(ws) {
 });
 
 function wssPrivateBroadcast(userId, tag, data) {
-  for (const ws of wss_private.clients) {
-    if (ws.readyState === WebSocket.OPEN && ws.userId == userId) {
+  for (const ws of wssPrivate.clients) {
+    if (ws.readyState === WebSocket.OPEN) {
+      // && ws.userId == userId) {
       ws.send(JSON.stringify({ tag, data }));
     }
   }

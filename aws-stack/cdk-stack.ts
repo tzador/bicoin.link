@@ -25,14 +25,14 @@ export class CdkStackStack extends cdk.Stack {
       cpu: 256,
       desiredCount: 1,
       taskImageOptions: {
-        image: ecs.ContainerImage.fromRegistry("tzador/bicoin-worker:v9"),
+        image: ecs.ContainerImage.fromRegistry("tzador/bicoin-worker:v11"),
         containerPort: 8080,
         logDriver: ecs.LogDrivers.awsLogs({
           streamPrefix: "bicoin",
           logRetention: logs.RetentionDays.TWO_MONTHS,
         }),
         environment: {
-          REDIS_URL: "redis://:srw8jn2vsfmgyvmv6bpwnmscte79xkg1@superb-wysteria-ff8f76fb7c.redisgreen.net:11042/",
+          REDIS_URL: process.env.REDIS_URL as string,
         },
       },
       memoryLimitMiB: 512,

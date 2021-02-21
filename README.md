@@ -7,10 +7,10 @@ Please visit [bicoin.link](https://bicoin.link) to try it live.
 ## Useful commands
 
 - `make` run locally in dev mode
-- `make docker` build and publish to docker hub
-- `cdk deploy` deploy this stack to your default AWS account/region
-- `cdk diff` compare deployed stack with current state
-- `cdk synth` emits the synthesized CloudFormation template
+- `make docker-hub` build and publish to docker hub
+- `cd aws-stack && cdk deploy` deploy this stack to your default AWS account/region
+- `cd aws-stack && cdk diff` compare deployed stack with current state
+- `cd aws-stack && cdk synth` emits the synthesized CloudFormation template
 
 # Architecture
 
