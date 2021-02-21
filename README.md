@@ -18,29 +18,12 @@ Please visit [bicoin.link](https://bicoin.link) to try it live.
 
 ![](docs/arch.png)
 
-# Protocol (HTTP + WebSocket)
-
-HTTP
-
-    { "query": "balance.get#user-id-12345", "echo": 123456789 }
-    { "result": "balance.get#user-id-12345", value: 4, "echo": 123456789 }
-    { "action": "balance.get#user-id-12345", "echo": 123456789 }
-    { "update": "balance.get#user-id-12345", value: 4, "echo": 123456789 }
-
-WebSocket
-
-    { "query": "balance.get#user-id-12345", "echo": 123456789 }
-    { "result": "balance.get#user-id-12345", value: 4, "echo": 123456789 }
-    { "action": "balance.get#user-id-12345", "echo": 123456789 }
-    { "update": "balance.get#user-id-12345", value: 4, "echo": 123456789 }
-
 # TODO
 
-- implement bets resolving after timeout of 1 minute = 60 seconds
 - render zoom
 - render local times
-- render open and close/current time of the bet in the bet list
 - animate min/max price
+- animate price
 - implement disallow overlaping bets
 - impleent pub/sub for cross server broadcast
 - implement scores
@@ -63,6 +46,8 @@ WebSocket
 - animated favicon
 - render times label
 - render price labels
+- render open and close/current time of the bet in the bet list
+- implement bets resolving after timeout of 1 minute = 60 seconds
 
 # WISH LIST
 
