@@ -25,7 +25,7 @@ export class CdkStackStack extends cdk.Stack {
       cpu: 256,
       desiredCount: 1,
       taskImageOptions: {
-        image: ecs.ContainerImage.fromRegistry("tzador/bicoin-worker:v11"),
+        image: ecs.ContainerImage.fromRegistry("tzador/bicoin-worker:v12"),
         containerPort: 8080,
         logDriver: ecs.LogDrivers.awsLogs({
           streamPrefix: "bicoin",
