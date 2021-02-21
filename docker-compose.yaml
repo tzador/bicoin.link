@@ -17,22 +17,17 @@ services:
       - ./vanilla.js:/vanilla.js
       - ./node.js/.env:/nodejsapp/.env
       - ./node.js/store.js:/nodejsapp/store.js
+      - ./node.js/binance.js:/nodejsapp/binance.js
       - ./node.js/main.js:/nodejsapp/main.js
     entrypoint: nodemon main.js
     scale: 1
-    # depends_on:
-    #   - mongo
-    #   - redis
+    depends_on:
+      - redis
 
-  # mongo:
-  #   image: "mongo"
-  #   # logging:
-  #   #   driver: none
-
-  # redis:
-  #   image: "redis"
-  #   logging:
-  #     driver: none
+  redis:
+    image: "redis"
+    logging:
+      driver: none
 
   # redjs:
   #   build: ./red.js

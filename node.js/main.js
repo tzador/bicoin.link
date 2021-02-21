@@ -69,7 +69,16 @@ app.get("/rest/bets/:ticker", async (req, res) => {
 app.post("/rest/bets/:ticker", async (req, res) => {
   const user_id = req.headers["auth-token"];
   if (!user_id) return res.json(null);
-  res.json(await store.putBet(req.params.ticker, user_id, req.body.is_up));
+  const bet = await store.newBet(req.params.ticker, user_id, req.body.is_up);
+  wssPrivateBroadcast(user_id, "bet-update", bet);
+  setTimeout(async () => {
+    // const close_ticker = JSON.parse(await redis.get("ticker#" + ticker));
+    // update the bet
+    // store it back to user bets table
+    // delete it from root bets table
+    wssPrivateBroadcast(user_id, "bet-resolve", bet);
+  }, 1000 * 5);
+  res.json(bet);
 });
 
 // # Public WebSocket API
@@ -102,4 +111,4 @@ function wssPrivateBroadcast(user_id, tag, data) {
 }
 
 // TODO possibly simplify and avoid the queue.
-require("./binance").connect(wssPublicBroadcast);
+require("./binance").connect("btcusdt", wssPublicBroadcast);
