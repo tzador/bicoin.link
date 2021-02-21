@@ -32,24 +32,32 @@ server.on("upgrade", function upgrade(req, socket, head) {
 });
 
 const store = require("./store");
+const { Console } = require("console");
 
 // # REST API
-app.use(body_parser.json());
 
-app.get("/score/:ticker", async (req, res) => {
-  const user_id = req.headers["auth-token"];
-  if (!user_id) return res.json(null);
-  res.json(await store.getScore(req.params.ticker, user_id));
+app.use(body_parser.json());
+app.use((req, res, next) => {
+  req.userId = req.headers["auth-token"] || null;
+  next();
 });
 
-app.post("/score/:ticker", async (req, res) => {
-  const user_id = req.headers["auth-token"];
-  if (!user_id) return res.json(null);
+app.get("/rest/score/:ticker", async (req, res) => {
+  if (!req.userId) return res.json(null);
+  res.json(await store.getScore(req.params.ticker, req.userId));
+});
+
+app.post("/rest/score/:ticker", async (req, res) => {
+  if (!req.userId) return res.json(null);
+  let newScore;
   if (req.body.reset) {
-    res.json(await store.setScore(req.params.ticker, user_id, 0));
+    newScore = await store.setScore(req.params.ticker, req.userId, 0);
   } else if (req.body.diff) {
-    res.json(await store.diffScore(req.params.ticker, user_id, req.body.diff));
-  } else res.json(null);
+    newScore = await store.diffScore(req.params.ticker, req.userId, req.body.diff);
+  } else return res.json(null);
+  const scoreInfo = { ticker: req.params.ticker, score: newScore };
+  wssPrivateBroadcast(req.userId, "update-score", scoreInfo);
+  res.json(scoreInfo);
 });
 
 app.get("/rest/ticker/:ticker", async (req, res) => {

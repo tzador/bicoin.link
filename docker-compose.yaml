@@ -15,10 +15,12 @@ services:
     build: .
     volumes:
       - ./vanilla.js:/vanilla.js
-      - ./node.js/.env:/nodejsapp/.env
+      # - ./node.js/.env:/nodejsapp/.env
       - ./node.js/store.js:/nodejsapp/store.js
       - ./node.js/binance.js:/nodejsapp/binance.js
       - ./node.js/main.js:/nodejsapp/main.js
+    environment:
+      REDIS_URL: redis://redis
     entrypoint: nodemon main.js
     scale: 1
     depends_on:

@@ -9,7 +9,7 @@ function scoreKey(ticker, user_id) {
   return "score#" + ticker + "#" + user_id;
 }
 
-exports.set_ticker = async (ticker, seconds, price) => {
+exports.setTicker = async (ticker, seconds, price) => {
   const json = JSON.stringify({ ticker, seconds, price });
   await redis.set("ticker#" + ticker, json);
   await redis.zadd("history#" + ticker, seconds, json);
@@ -30,18 +30,18 @@ exports.getBets = async (ticker, user_id) => {
 };
 
 exports.getScore = async (ticker, user_id) => {
-  const value = await redis.get(scoreKey(ticker, user_id));
-  return JSON.parse(value);
+  return JSON.parse((await redis.get(scoreKey(ticker, user_id))) || "0");
 };
 
 exports.setScore = async (ticker, user_id, score) => {
-  const json = JSON.stringify(score);
-  await redis.set(scoreKey(ticker, user_id), json);
+  await redis.set(scoreKey(ticker, user_id), score);
+  return score;
 };
 
 exports.diffScore = async (ticker, user_id, diff) => {
   const score = await this.getScore(ticker, user_id);
   await this.setScore(ticker, user_id, score + diff);
+  return score + diff;
 };
 
 exports.newBet = async (ticker, user_id, is_up) => {

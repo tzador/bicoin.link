@@ -13,7 +13,7 @@ exports.connect = (ticker, wssPublicBroadcast) => {
       const { seconds, price } = queue.shift();
       if (last_seconds && Math.floor(last_seconds) != Math.floor(seconds)) {
         const seconds_floor = Math.floor(seconds);
-        store.set_ticker(ticker, seconds_floor, last_price);
+        store.setTicker(ticker, seconds_floor, last_price);
         wssPublicBroadcast("ticker#" + ticker, {
           ticker,
           seconds: seconds_floor,

@@ -17,10 +17,11 @@ let public_ws = null;
 let private_ws = null;
 
 (function boot() {
-  reconnect_public_ws();
-  reconnect_private_ws();
-  fetch_history();
-  fetch_bets();
+  reconnectPublicWS();
+  recoonectPrivateWS();
+  fetchHistory();
+  fetchBets();
+  fetchScore();
 })();
 
 // # UI Actions
@@ -30,27 +31,28 @@ function login() {
     state.token = state.token.trim();
     localStorage.setItem(TOKEN, state.token);
   } else localStorage.removeItem(TOKEN);
-  reconnect_private_ws();
-  fetch_bets();
+  recoonectPrivateWS();
+  fetchBets();
+  fetchScore();
 }
 
 function logout() {
   state.token = null;
   state.bets = [];
   localStorage.removeItem(TOKEN);
-  reconnect_private_ws();
+  recoonectPrivateWS();
 }
 
-function minus_one() {
-  restPost("/score/btcusdt", { diff: -1 });
+function minusOne() {
+  restPost("/rest/score/btcusdt", { diff: -1 });
 }
 
 function reset() {
-  restPost("/score/btcusdt", { reset: true });
+  restPost("/rest/score/btcusdt", { reset: true });
 }
 
-function plus_one() {
-  restPost("/score/btcusdt", { diff: +1 });
+function plusOne() {
+  restPost("/rest/score/btcusdt", { diff: +1 });
 }
 
 async function place_bet(is_up) {
@@ -67,6 +69,7 @@ async function place_bet(is_up) {
   const the_score_el = document.getElementById("the-score");
   let last_auth_token = -1;
   let last_ticker_seconds = -1;
+  let last_score = null;
 
   (function mirror() {
     if (last_auth_token != state.token) {
@@ -87,7 +90,12 @@ async function place_bet(is_up) {
         the_score_el.style.display = "none";
       }
     }
-    the_score_el.innerHTML = "Score = " + state.score;
+
+    if (last_score == null || last_score != state.score) {
+      the_score_el.innerHTML = "Score = " + state.score;
+      last_score = state.score;
+    }
+
     if (last_ticker_seconds != state.ticker.seconds) {
       last_ticker_seconds = state.ticker.seconds;
       const date = format_date(state.ticker.seconds);
@@ -102,22 +110,22 @@ async function place_bet(is_up) {
 }
 
 // # WebSocket
-function reconnect_public_ws() {
+function reconnectPublicWS() {
   if (public_ws) public_ws.close();
   public_ws = new WebSocket(public_ws_url);
   // public_ws.onclose = () =>
-  //   setTimeout(reconnect_public_ws, reconnect_timeout_ms);
+  //   setTimeout(reconnectPublicWS, reconnect_timeout_ms);
   public_ws.onerror = (error) => {
     console.error(error.message);
-    // setTimeout(reconnect_public_ws, reconnect_timeout_ms);
+    // setTimeout(reconnectPublicWS, reconnect_timeout_ms);
   };
   public_ws.onmessage = (message) => {
     const { tag, data } = JSON.parse(message.data);
-    on_public(tag, data);
+    onPublicEvent(tag, data);
   };
 }
 
-function reconnect_private_ws() {
+function recoonectPrivateWS() {
   if (private_ws) private_ws.close();
   private = null;
   if (!state.token) return;
@@ -126,18 +134,18 @@ function reconnect_private_ws() {
     private_ws.send(JSON.stringify({ token: state.token }));
   };
   // private_ws.onclose = () =>
-  //   setTimeout(reconnect_private_ws, reconnect_timeout_ms);
+  //   setTimeout(recoonectPrivateWS, reconnect_timeout_ms);
   private_ws.onerror = (error) => {
     console.error(error.message);
-    // setTimeout(reconnect_private_ws, reconnect_timeout_ms);
+    // setTimeout(recoonectPrivateWS, reconnect_timeout_ms);
   };
   private_ws.onmessage = (message) => {
     const { tag, data } = JSON.parse(message.data);
-    on_private(tag, data);
+    onPrivateEvent(tag, data);
   };
 }
 
-function on_public(tag, data) {
+function onPublicEvent(tag, data) {
   if (tag == "ticker#btcusdt") {
     state.ticker = data;
     state.history.push(data);
@@ -145,8 +153,10 @@ function on_public(tag, data) {
   }
 }
 
-function on_private(tag, data) {
-  console.log("on_private", tag, data);
+function onPrivateEvent(tag, data) {
+  if (tag == "update-score") {
+    state.score = data.score;
+  }
 }
 
 // # REST
@@ -170,13 +180,20 @@ async function restPost(path, data) {
   return await response.json();
 }
 
-async function fetch_history() {
+async function fetchHistory() {
   state.history = await restGet("/rest/history/btcusdt");
 }
 
-async function fetch_bets() {
+async function fetchBets() {
   if (!state.token) return;
   state.bets = await restGet("/rest/bets/btcusdt");
+}
+
+async function fetchScore() {
+  if (!state.token) return;
+  console.log("fetch score");
+  state.score = await restGet("/rest/score/btcusdt");
+  console.log("fetch score res", state.score);
 }
 
 // # Render
