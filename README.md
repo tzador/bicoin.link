@@ -1,6 +1,6 @@
 # bicoin.link
 
-Bet on the BitCoin price fluctuations.
+Bet on the 1 minute BitCoin price fluctuations.
 
 Please visit [bicoin.link](https://bicoin.link) to try it live.
 
@@ -11,6 +11,10 @@ Please visit [bicoin.link](https://bicoin.link) to try it live.
 - `cd aws-stack && cdk deploy` deploy this stack to your default AWS account/region
 - `cd aws-stack && cdk diff` compare deployed stack with current state
 - `cd aws-stack && cdk synth` emits the synthesized CloudFormation template
+
+# Vanilla.js Web Client
+
+![](docs/screenshot.png)
 
 # Architecture
 
@@ -35,8 +39,6 @@ WebSocket
 # TODO
 
 - implement bets resolving after timeout of 1 minute = 60 seconds
-- render times label
-- render price labels
 - render zoom
 - render local times
 - render open and close/current time of the bet in the bet list
@@ -61,6 +63,8 @@ WebSocket
 - retina support / devicePixelRatio / DPI
 - deploy using CDK to AWS
 - animated favicon
+- render times label
+- render price labels
 
 # WISH LIST
 

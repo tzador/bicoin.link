@@ -169,7 +169,7 @@ function renderLabels() {
   {
     ctx.save();
     ctx.translate(secondsToX(secondsNow), priceToY(animPrice));
-    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
     ctx.fillRect(0, -52, width, 50);
     ctx.fillStyle = "rgba(255, 0, 0, 0.75)";
     const text = animPrice.toFixed(3);
