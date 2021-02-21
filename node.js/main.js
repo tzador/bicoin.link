@@ -106,8 +106,7 @@ wssPrivate.on("connection", function connection(ws) {
 
 function wssPrivateBroadcast(userId, tag, data) {
   for (const ws of wssPrivate.clients) {
-    if (ws.readyState === WebSocket.OPEN) {
-      // && ws.userId == userId) {
+    if (ws.readyState === WebSocket.OPEN && ws.userId == userId) {
       ws.send(JSON.stringify({ tag, data }));
     }
   }
