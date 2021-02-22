@@ -13,6 +13,7 @@ const state = {
   bets: [],
   score: 0,
 };
+
 let public_ws = null;
 let private_ws = null;
 

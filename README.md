@@ -8,6 +8,7 @@ Please visit [bicoin.link](https://bicoin.link) to try it live.
 
 ## Useful commands
 
+- `cd prototype`
 - `make` run locally in dev mode
 - `make docker-hub` build and publish to docker hub
 - `cd aws-stack && cdk deploy` deploy this stack to your default AWS account/region

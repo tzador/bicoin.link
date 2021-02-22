@@ -171,7 +171,7 @@ function renderLabels() {
     ctx.translate(secondsToX(secondsNow), priceToY(animPrice));
     ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
     ctx.fillRect(0, -52, width, 50);
-    ctx.fillStyle = "rgba(255, 0, 0, 0.75)";
+    ctx.fillStyle = "rgba(255, 255, 255, 1)";
     const text = animPrice.toFixed(3);
     ctx.fillText(text, 8 * dpi, -8 * dpi);
     ctx.restore();
@@ -243,7 +243,7 @@ function renderBets(ctx, bets) {
 
       let winText = "";
       if (bet.win === true) winText = "win";
-      if (bet.win === false) winText = "loose";
+      if (bet.win === false) winText = "lost";
       ctx.fillText(winText, 216 * dpi, y + 22 * dpi);
       ctx.restore();
       y += 40 * dpi;
