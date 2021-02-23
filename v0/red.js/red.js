@@ -15,6 +15,7 @@ const state = {
   seconds: 0,
   // history: Array<Ticker> = [];
   // user_bets: Map<string, Bet> = new Map();
+  // all_bets = []
 };
 
 (function timer() {
